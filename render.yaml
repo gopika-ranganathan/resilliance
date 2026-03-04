@@ -1,0 +1,33 @@
+services:
+  # === BACKEND (Spring Boot) ===
+  - type: web
+    name: resilience-backend
+    runtime: java
+    buildCommand: cd backend && ./mvnw package -DskipTests
+    startCommand: java -jar backend/target/api-0.0.1-SNAPSHOT.jar
+    healthCheckPath: /api/auth/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JAVA_VERSION
+        value: 21
+
+  # === FRONTEND (React/Vite Static Site) ===
+  - type: web
+    name: resilience-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
