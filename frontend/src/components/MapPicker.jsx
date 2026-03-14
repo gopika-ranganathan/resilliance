@@ -14,7 +14,7 @@ const defaultCenter = {
 const MapPicker = ({ location, setLocation, readOnly = false }) => {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: "YOUR_API_KEY_HERE" // Ideally loaded from env
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""
     });
 
     const [map, setMap] = useState(null);
