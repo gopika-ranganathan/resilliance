@@ -74,9 +74,39 @@ const Disasters = () => {
         }
     };
 
+    const uploadToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'resilience_preset'); // A standard public preset we will assume or instruct user to create
+
+        try {
+            const response = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            return data.secure_url;
+        } catch (error) {
+            console.error("Error uploading to Cloudinary", error);
+            return null;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!location.lat) return alert('Please select a location on the map or use the Geography Camera');
+
+        let finalImageUrl = imageUrl;
+
+        // If a real photo was captured via the camera, upload it first
+        if (fileInputRef.current?.files[0]) {
+            const uploadedUrl = await uploadToCloudinary(fileInputRef.current.files[0]);
+            if (uploadedUrl) {
+                finalImageUrl = uploadedUrl;
+            } else {
+                return alert('Failed to upload the image. Please try again.');
+            }
+        }
 
         try {
             await api.post('/disasters', {
@@ -84,7 +114,7 @@ const Disasters = () => {
                 description,
                 disasterType,
                 severity,
-                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1547683905-f30e1e15e566?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: finalImageUrl || 'https://images.unsplash.com/photo-1547683905-f30e1e15e566?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 latitude: location.lat,
                 longitude: location.lng
             });
@@ -92,6 +122,7 @@ const Disasters = () => {
             fetchDisasters();
             // Reset form
             setTitle(''); setDescription(''); setPreviewImage(null); setLocation({ lat: null, lng: null });
+            if (fileInputRef.current) fileInputRef.current.value = "";
         } catch (error) {
             console.error("Error creating disaster report", error);
             alert('Failed to submit report');
