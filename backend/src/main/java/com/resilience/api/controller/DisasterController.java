@@ -52,4 +52,27 @@ public class DisasterController {
         Disaster savedDisaster = disasterRepository.save(disaster);
         return ResponseEntity.ok(savedDisaster);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDisaster(@PathVariable Long id) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        Optional<Disaster> disasterOptional = disasterRepository.findById(id);
+        if (disasterOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Disaster disaster = disasterOptional.get();
+        if (disaster.getUser() != null && disaster.getUser().getId().equals(user.getId())) {
+            disasterRepository.delete(disaster);
+            return ResponseEntity.ok().body("Disaster deleted successfully");
+        } else {
+            return ResponseEntity.status(403).body("You are not authorized to delete this post");
+        }
+    }
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import MapPicker from '../components/MapPicker';
-import { Activity, MapPin, Clock, AlertTriangle, Camera } from 'lucide-react';
+import { Activity, MapPin, Clock, AlertTriangle, Camera, Trash2 } from 'lucide-react';
 
 const Disasters = () => {
     const [disasters, setDisasters] = useState([]);
@@ -95,6 +95,17 @@ const Disasters = () => {
         } catch (error) {
             console.error("Error creating disaster report", error);
             alert('Failed to submit report');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this disaster report?')) return;
+        try {
+            await api.delete(`/disasters/${id}`);
+            fetchDisasters();
+        } catch (error) {
+            console.error("Error deleting disaster report", error);
+            alert(error.response?.data || 'Failed to delete report');
         }
     };
 
@@ -219,7 +230,16 @@ const Disasters = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {disasters.map((disaster) => (
-                        <div key={disaster.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+                        <div key={disaster.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
+                            {user && disaster.user && user.id === disaster.user.id && (
+                                <button
+                                    onClick={() => handleDelete(disaster.id)}
+                                    className="absolute top-3 left-3 z-10 bg-white/90 hover:bg-red-50 text-red-600 p-2 rounded-full shadow border border-red-100 transition-colors"
+                                    title="Delete Report"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
                             <div className="relative h-48">
                                 <img src={disaster.imageUrl} alt={disaster.title} className="w-full h-full object-cover" />
                                 <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-white ${disaster.severity === 'Critical' ? 'bg-red-600' :
