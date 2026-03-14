@@ -161,7 +161,7 @@ const AnimalRescue = () => {
                                     </div>
                                 </div>
                                 <div className="mt-6 pt-4 border-t border-gray-100">
-                                    <button className="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-md font-medium transition-colors text-sm w-full">Coordinate Rescue</button>
+                                    <a href={`tel:${report.contact}`} className="block w-full text-center bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-md font-medium transition-colors text-sm">📞 Coordinate Rescue</a>
                                 </div>
                             </div>
                         </div>

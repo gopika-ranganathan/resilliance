@@ -181,7 +181,12 @@ const Volunteer = () => {
                                     </div>
                                 </div>
                                 <div className="mt-6 pt-4 border-t border-gray-100">
-                                    <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded-md font-medium transition-colors">Contact Organization</button>
+                                    <a
+                                        href={request.contact?.includes('@') ? `mailto:${request.contact}` : `tel:${request.contact}`}
+                                        className="block w-full text-center bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded-md font-medium transition-colors"
+                                    >
+                                        📞 Contact Organization
+                                    </a>
                                 </div>
                             </div>
                         </div>
