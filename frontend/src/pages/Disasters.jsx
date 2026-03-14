@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import MapPicker from '../components/MapPicker';
-import { Activity, MapPin, Clock, AlertTriangle } from 'lucide-react';
+import { Activity, MapPin, Clock, AlertTriangle, Camera } from 'lucide-react';
 
 const Disasters = () => {
     const [disasters, setDisasters] = useState([]);
@@ -15,7 +15,11 @@ const Disasters = () => {
     const [disasterType, setDisasterType] = useState('Flood');
     const [severity, setSeverity] = useState('High');
     const [location, setLocation] = useState({ lat: null, lng: null });
-    const [imageUrl, setImageUrl] = useState(''); // Using URL for simplicity, real app would use Cloudinary upload
+    const [imageUrl, setImageUrl] = useState('');
+    const [previewImage, setPreviewImage] = useState(null);
+    const [isCapturing, setIsCapturing] = useState(false);
+
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         fetchDisasters();
@@ -30,9 +34,49 @@ const Disasters = () => {
         }
     };
 
+    const handleCaptureStart = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handlePhotoCaptured = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Preview the image locally
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewImage(objectUrl);
+        setIsCapturing(true);
+
+        // Geotag: Get precise location and time
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setLocation({ lat, lng });
+
+                    const timestamp = new Date().toLocaleString();
+                    setDescription((prev) =>
+                        prev ? `${prev}\n\n[Captured at: ${timestamp}]\n[Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}]`
+                            : `[Captured at: ${timestamp}]\n[Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}] `
+                    );
+                    setIsCapturing(false);
+                },
+                (error) => {
+                    alert("Unable to retrieve your location from the camera request. Please allow location permissions.");
+                    setIsCapturing(false);
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser.");
+            setIsCapturing(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!location.lat) return alert('Please select a location on the map');
+        if (!location.lat) return alert('Please select a location on the map or use the Geography Camera');
 
         try {
             await api.post('/disasters', {
@@ -47,7 +91,7 @@ const Disasters = () => {
             setShowForm(false);
             fetchDisasters();
             // Reset form
-            setTitle(''); setDescription('');
+            setTitle(''); setDescription(''); setPreviewImage(null); setLocation({ lat: null, lng: null });
         } catch (error) {
             console.error("Error creating disaster report", error);
             alert('Failed to submit report');
@@ -79,10 +123,36 @@ const Disasters = () => {
 
             {showForm && (
                 <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-red-100">
-                    <h2 className="text-xl font-bold mb-4 text-gray-900 border-b pb-2">Submit Disaster Report</h2>
+                    <h2 className="text-xl font-bold mb-4 text-gray-900 border-b pb-2 flex items-center justify-between">
+                        Submit Disaster Report
+                        <button
+                            type="button"
+                            onClick={handleCaptureStart}
+                            className={`flex items-center text-sm px-4 py-2 rounded-md font-medium text-white transition-colors ${isCapturing ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+                        >
+                            <Camera className="w-4 h-4 mr-2" />
+                            {isCapturing ? 'Getting Location...' : 'Geography Camera'}
+                        </button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            ref={fileInputRef}
+                            className="hidden"
+                            onChange={handlePhotoCaptured}
+                        />
+                    </h2>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
+                                {previewImage && (
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Captured Evidence</label>
+                                        <div className="relative h-48 rounded-md overflow-hidden border border-gray-300">
+                                            <img src={previewImage} alt="Captured preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                                     <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 px-3 py-2 border" placeholder="E.g., Severe Flooding in Downtown" />
@@ -111,19 +181,22 @@ const Disasters = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1 mt-2 flex justify-between">
+                                        Optional Image Link
+                                        <span className="text-xs text-gray-400 font-normal">Use if not capturing photo</span>
+                                    </label>
                                     <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 px-3 py-2 border" placeholder="https://example.com/image.jpg" />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (Stamps)</label>
                                     <textarea required value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 px-3 py-2 border" placeholder="Describe the situation..."></textarea>
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Location <span className="text-red-500">*</span></label>
-                                <p className="text-xs text-gray-500 mb-2">Click on the map to pin the exact location.</p>
+                                <p className="text-xs text-gray-500 mb-2">Click on the map to pin the exact location, or use Geography Camera.</p>
                                 <MapPicker location={location} setLocation={setLocation} />
                             </div>
                         </div>
@@ -150,8 +223,8 @@ const Disasters = () => {
                             <div className="relative h-48">
                                 <img src={disaster.imageUrl} alt={disaster.title} className="w-full h-full object-cover" />
                                 <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-white ${disaster.severity === 'Critical' ? 'bg-red-600' :
-                                        disaster.severity === 'High' ? 'bg-orange-500' :
-                                            disaster.severity === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                                    disaster.severity === 'High' ? 'bg-orange-500' :
+                                        disaster.severity === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
                                     }`}>
                                     {disaster.severity}
                                 </div>
@@ -161,7 +234,7 @@ const Disasters = () => {
                             </div>
                             <div className="p-5">
                                 <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{disaster.title}</h3>
-                                <p className="text-gray-600 text-sm line-clamp-3 mb-4 h-[60px]">{disaster.description}</p>
+                                <p className="text-gray-600 text-sm line-clamp-3 mb-4 h-[60px] whitespace-pre-wrap">{disaster.description}</p>
 
                                 <div className="flex items-center text-sm text-gray-500 mb-2">
                                     <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-red-500" />
