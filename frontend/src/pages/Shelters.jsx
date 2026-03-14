@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import MapPicker from '../components/MapPicker';
+import ImageUploadButton from '../components/ImageUploadButton';
 import { Home, Users, Phone, MapPin } from 'lucide-react';
 
 const Shelters = () => {
@@ -16,6 +17,7 @@ const Shelters = () => {
     const [contact, setContact] = useState('');
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [imageUrl, setImageUrl] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState('');
 
     useEffect(() => {
         fetchShelters();
@@ -40,14 +42,14 @@ const Shelters = () => {
                 capacity: parseInt(capacity),
                 availableBeds: parseInt(availableBeds),
                 contact,
-                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: uploadedImageUrl || imageUrl || 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 latitude: location.lat,
                 longitude: location.lng
             });
             setShowForm(false);
             fetchShelters();
             // Reset
-            setName(''); setCapacity(''); setAvailableBeds(''); setContact('');
+            setName(''); setCapacity(''); setAvailableBeds(''); setContact(''); setUploadedImageUrl(''); setImageUrl('');
         } catch (error) {
             console.error("Error adding shelter", error);
             alert('Failed to submit shelter');
@@ -104,10 +106,7 @@ const Shelters = () => {
                                     <input type="text" required value={contact} onChange={(e) => setContact(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 px-3 py-2 border" placeholder="+1..." />
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                                    <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 px-3 py-2 border" placeholder="https://example.com/image.jpg" />
-                                </div>
+                                <ImageUploadButton onUpload={(url) => setUploadedImageUrl(url)} accentColor="emerald" />
                             </div>
 
                             <div>

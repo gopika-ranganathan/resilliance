@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import MapPicker from '../components/MapPicker';
+import ImageUploadButton from '../components/ImageUploadButton';
 import { ShieldAlert, Phone, MapPin, AlertCircle, Clock } from 'lucide-react';
 
 const AnimalRescue = () => {
@@ -15,6 +16,7 @@ const AnimalRescue = () => {
     const [contact, setContact] = useState('');
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [imageUrl, setImageUrl] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState('');
 
     useEffect(() => {
         fetchReports();
@@ -38,14 +40,14 @@ const AnimalRescue = () => {
                 animalType,
                 description,
                 contact,
-                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: uploadedImageUrl || imageUrl || 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 latitude: location.lat,
                 longitude: location.lng
             });
             setShowForm(false);
             fetchReports();
             // Reset
-            setAnimalType('Dog'); setDescription(''); setContact('');
+            setAnimalType('Dog'); setDescription(''); setContact(''); setUploadedImageUrl(''); setImageUrl('');
         } catch (error) {
             console.error("Error adding animal rescue report", error);
             alert('Failed to submit report');
@@ -99,10 +101,7 @@ const AnimalRescue = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                                    <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 px-3 py-2 border" placeholder="https://" />
-                                </div>
+                                <ImageUploadButton onUpload={(url) => setUploadedImageUrl(url)} accentColor="rose" />
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Description of Situation</label>

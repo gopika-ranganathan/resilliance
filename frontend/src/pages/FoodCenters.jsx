@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import MapPicker from '../components/MapPicker';
+import ImageUploadButton from '../components/ImageUploadButton';
 import { Heart, Clock, Phone, MapPin, Package } from 'lucide-react';
 
 const FoodCenters = () => {
@@ -16,6 +17,7 @@ const FoodCenters = () => {
     const [contact, setContact] = useState('');
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [imageUrl, setImageUrl] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState('');
 
     useEffect(() => {
         fetchFoodCenters();
@@ -40,14 +42,14 @@ const FoodCenters = () => {
                 foodType,
                 distributionTime,
                 contact,
-                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1593113565694-c70043f114c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                imageUrl: uploadedImageUrl || imageUrl || 'https://images.unsplash.com/photo-1593113565694-c70043f114c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 latitude: location.lat,
                 longitude: location.lng
             });
             setShowForm(false);
             fetchFoodCenters();
             // Reset
-            setOrganizationName(''); setFoodType(''); setDistributionTime(''); setContact('');
+            setOrganizationName(''); setFoodType(''); setDistributionTime(''); setContact(''); setUploadedImageUrl(''); setImageUrl('');
         } catch (error) {
             console.error("Error adding food center", error);
             alert('Failed to submit food center');
@@ -104,8 +106,7 @@ const FoodCenters = () => {
                                         <input type="text" required value={contact} onChange={(e) => setContact(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="+1..." />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                                        <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="https://" />
+                                        <ImageUploadButton onUpload={(url) => setUploadedImageUrl(url)} accentColor="amber" />
                                     </div>
                                 </div>
                             </div>
