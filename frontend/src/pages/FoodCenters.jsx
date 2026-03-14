@@ -18,6 +18,8 @@ const FoodCenters = () => {
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [imageUrl, setImageUrl] = useState('');
     const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+    const [availabilityType, setAvailabilityType] = useState('TIME_BASED');
+    const [stockQuantity, setStockQuantity] = useState('');
 
     useEffect(() => {
         fetchFoodCenters();
@@ -43,13 +45,15 @@ const FoodCenters = () => {
                 distributionTime,
                 contact,
                 imageUrl: uploadedImageUrl || imageUrl || 'https://images.unsplash.com/photo-1593113565694-c70043f114c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                availabilityType,
+                stockQuantity: availabilityType === 'STOCK_BASED' ? parseInt(stockQuantity) : null,
                 latitude: location.lat,
                 longitude: location.lng
             });
             setShowForm(false);
             fetchFoodCenters();
             // Reset
-            setOrganizationName(''); setFoodType(''); setDistributionTime(''); setContact(''); setUploadedImageUrl(''); setImageUrl('');
+            setOrganizationName(''); setFoodType(''); setDistributionTime(''); setContact(''); setUploadedImageUrl(''); setImageUrl(''); setStockQuantity(''); setAvailabilityType('TIME_BASED');
         } catch (error) {
             console.error("Error adding food center", error);
             alert('Failed to submit food center');
@@ -96,23 +100,47 @@ const FoodCenters = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Distribution Time</label>
-                                    <input type="text" required value={distributionTime} onChange={(e) => setDistributionTime(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="E.g., 10:00 AM - 2:00 PM Daily" />
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Food Availability Mode</label>
+                                    <div className="flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setAvailabilityType('TIME_BASED')}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium border transition-colors ${availabilityType === 'TIME_BASED' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                                        >
+                                            🕐 By Time
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setAvailabilityType('STOCK_BASED')}
+                                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium border transition-colors ${availabilityType === 'STOCK_BASED' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                                        >
+                                            📦 By Stock
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {availabilityType === 'TIME_BASED' ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Distribution Hours</label>
+                                        <input type="text" required={availabilityType === 'TIME_BASED'} value={distributionTime} onChange={(e) => setDistributionTime(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="E.g., 10:00 AM - 2:00 PM Daily" />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Current Stock (units / meals)</label>
+                                        <input type="number" required={availabilityType === 'STOCK_BASED'} min="0" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="E.g., 150" />
+                                        <p className="text-xs text-gray-500 mt-1">This will show as a stock counter on the card.</p>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                                        <input type="text" required value={contact} onChange={(e) => setContact(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="+1..." />
+                                        <input type="text" required value={contact} onChange={(e) => setContact(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2 border" placeholder="Phone number" />
                                     </div>
                                     <div>
                                         <ImageUploadButton onUpload={(url) => setUploadedImageUrl(url)} accentColor="amber" />
                                     </div>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Location <span className="text-red-500">*</span></label>
                                 <p className="text-xs text-gray-500 mb-2">Click on the map to pin the distribution location.</p>
                                 <MapPicker location={location} setLocation={setLocation} />
                             </div>
@@ -149,10 +177,24 @@ const FoodCenters = () => {
                                         <span><span className="font-semibold">Supplies:</span> {center.foodType}</span>
                                     </div>
 
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <Clock className="h-5 w-5 mr-3 text-amber-500" />
-                                        <span><span className="font-semibold">Hours:</span> {center.distributionTime}</span>
-                                    </div>
+                                    {center.availabilityType === 'STOCK_BASED' ? (
+                                        <div className="flex items-center text-sm">
+                                            <div className="flex-1">
+                                                <div className="flex justify-between text-sm mb-1">
+                                                    <span className="font-semibold text-gray-700">Stock Available</span>
+                                                    <span className="font-bold text-amber-600">{center.stockQuantity} units</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div className={`h-2 rounded-full ${center.stockQuantity > 100 ? 'bg-green-500' : center.stockQuantity > 20 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${Math.min(center.stockQuantity, 200) / 2}%` }}></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center text-sm text-gray-600">
+                                            <Clock className="h-5 w-5 mr-3 text-amber-500" />
+                                            <span><span className="font-semibold">Hours:</span> {center.distributionTime}</span>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center text-sm text-gray-600">
                                         <Phone className="h-5 w-5 mr-3 text-amber-500" />

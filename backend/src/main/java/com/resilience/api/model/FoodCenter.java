@@ -24,6 +24,12 @@ public class FoodCenter {
     @Column(name = "distribution_time")
     private String distributionTime;
 
+    @Column(name = "availability_type")
+    private String availabilityType; // TIME_BASED or STOCK_BASED
+
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity; // Used only when availabilityType = STOCK_BASED
+
     private String contact;
 
     private Double latitude;
