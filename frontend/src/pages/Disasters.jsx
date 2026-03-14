@@ -80,7 +80,7 @@ const Disasters = () => {
         formData.append('upload_preset', 'resilience_preset'); // A standard public preset we will assume or instruct user to create
 
         try {
-            const response = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', {
+            const response = await fetch('https://api.cloudinary.com/v1_1/dyakbfume/image/upload', {
                 method: 'POST',
                 body: formData,
             });
