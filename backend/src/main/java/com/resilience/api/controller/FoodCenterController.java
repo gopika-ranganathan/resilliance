@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -32,13 +33,49 @@ public class FoodCenterController {
     public ResponseEntity<?> createFoodCenter(@RequestBody FoodCenter foodCenter) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-
-        if (user == null) {
+        if (user == null)
             return ResponseEntity.badRequest().body("User not found");
-        }
-
         foodCenter.setUser(user);
-        FoodCenter savedFoodCenter = foodCenterRepository.save(foodCenter);
-        return ResponseEntity.ok(savedFoodCenter);
+        return ResponseEntity.ok(foodCenterRepository.save(foodCenter));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateFoodCenter(@PathVariable Long id, @RequestBody FoodCenter updatedCenter) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (user == null)
+            return ResponseEntity.badRequest().body("User not found");
+        Optional<FoodCenter> opt = foodCenterRepository.findById(id);
+        if (opt.isEmpty())
+            return ResponseEntity.notFound().build();
+        FoodCenter center = opt.get();
+        if (center.getUser() == null || !center.getUser().getId().equals(user.getId()))
+            return ResponseEntity.status(403).body("Not authorized");
+        center.setOrganizationName(updatedCenter.getOrganizationName());
+        center.setFoodType(updatedCenter.getFoodType());
+        center.setDistributionTime(updatedCenter.getDistributionTime());
+        center.setContact(updatedCenter.getContact());
+        center.setAvailabilityType(updatedCenter.getAvailabilityType());
+        center.setStockQuantity(updatedCenter.getStockQuantity());
+        if (updatedCenter.getImageUrl() != null)
+            center.setImageUrl(updatedCenter.getImageUrl());
+        return ResponseEntity.ok(foodCenterRepository.save(center));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteFoodCenter(@PathVariable Long id) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (user == null)
+            return ResponseEntity.badRequest().body("User not found");
+        Optional<FoodCenter> opt = foodCenterRepository.findById(id);
+        if (opt.isEmpty())
+            return ResponseEntity.notFound().build();
+        FoodCenter center = opt.get();
+        if (center.getUser() != null && center.getUser().getId().equals(user.getId())) {
+            foodCenterRepository.delete(center);
+            return ResponseEntity.ok("Deleted successfully");
+        }
+        return ResponseEntity.status(403).body("Not authorized");
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -32,13 +33,47 @@ public class VolunteerRequestController {
     public ResponseEntity<?> createVolunteerRequest(@RequestBody VolunteerRequest volunteerRequest) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
-
-        if (user == null) {
+        if (user == null)
             return ResponseEntity.badRequest().body("User not found");
-        }
-
         volunteerRequest.setUser(user);
-        VolunteerRequest savedRequest = volunteerRequestRepository.save(volunteerRequest);
-        return ResponseEntity.ok(savedRequest);
+        return ResponseEntity.ok(volunteerRequestRepository.save(volunteerRequest));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateVolunteerRequest(@PathVariable Long id, @RequestBody VolunteerRequest updated) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (user == null)
+            return ResponseEntity.badRequest().body("User not found");
+        Optional<VolunteerRequest> opt = volunteerRequestRepository.findById(id);
+        if (opt.isEmpty())
+            return ResponseEntity.notFound().build();
+        VolunteerRequest vr = opt.get();
+        if (vr.getUser() == null || !vr.getUser().getId().equals(user.getId()))
+            return ResponseEntity.status(403).body("Not authorized");
+        vr.setOrganizationName(updated.getOrganizationName());
+        vr.setHelpType(updated.getHelpType());
+        vr.setVolunteersNeeded(updated.getVolunteersNeeded());
+        vr.setContact(updated.getContact());
+        if (updated.getImageUrl() != null)
+            vr.setImageUrl(updated.getImageUrl());
+        return ResponseEntity.ok(volunteerRequestRepository.save(vr));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteVolunteerRequest(@PathVariable Long id) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (user == null)
+            return ResponseEntity.badRequest().body("User not found");
+        Optional<VolunteerRequest> opt = volunteerRequestRepository.findById(id);
+        if (opt.isEmpty())
+            return ResponseEntity.notFound().build();
+        VolunteerRequest vr = opt.get();
+        if (vr.getUser() != null && vr.getUser().getId().equals(user.getId())) {
+            volunteerRequestRepository.delete(vr);
+            return ResponseEntity.ok("Deleted successfully");
+        }
+        return ResponseEntity.status(403).body("Not authorized");
     }
 }
