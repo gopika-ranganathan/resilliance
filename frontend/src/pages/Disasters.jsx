@@ -246,9 +246,14 @@ const Disasters = () => {
                                         <Clock className="h-3 w-3 mr-1" />
                                         {new Date(disaster.createdAt).toLocaleDateString()}
                                     </div>
-                                    <button className="text-primary-600 hover:text-primary-800 text-sm font-medium flex items-center">
+                                    <a
+                                        href={`https://www.google.com/maps?q=${disaster.latitude},${disaster.longitude}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary-600 hover:text-primary-800 text-sm font-medium flex items-center"
+                                    >
                                         View Map <AlertTriangle className="h-4 w-4 ml-1" />
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>
