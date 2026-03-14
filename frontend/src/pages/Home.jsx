@@ -95,11 +95,11 @@ const HomePage = () => {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 gap-y-6">
                         <div className="bg-danger-500 bg-opacity-50 p-4 rounded-lg text-center backdrop-blur-sm shadow-sm border border-danger-500">
-                            <div className="font-bold text-2xl">911</div>
+                            <div className="font-bold text-2xl">100</div>
                             <div className="text-sm font-medium uppercase tracking-wider text-red-100">Police / Fire</div>
                         </div>
                         <div className="bg-danger-500 bg-opacity-50 p-4 rounded-lg text-center backdrop-blur-sm shadow-sm border border-danger-500">
-                            <div className="font-bold text-2xl">911</div>
+                            <div className="font-bold text-2xl">108</div>
                             <div className="text-sm font-medium uppercase tracking-wider text-red-100">Ambulance</div>
                         </div>
                         <div className="bg-danger-500 bg-opacity-50 p-4 rounded-lg text-center backdrop-blur-sm shadow-sm border border-danger-500">

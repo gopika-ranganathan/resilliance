@@ -53,7 +53,7 @@ const Emergency = () => {
                     <ul className="space-y-6">
                         <li className="flex justify-between items-center">
                             <div>
-                                <span className="block font-bold text-gray-900 text-lg">Disaster Mgmt</span>
+                                <span className="block font-bold text-gray-900 text-lg">Disaster Mgmt (NDMA)</span>
                                 <span className="text-sm text-gray-500">National Relief</span>
                             </div>
                             <a href="tel:1078" className="text-2xl font-black text-primary-600 bg-primary-100 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors">1078</a>
@@ -63,14 +63,14 @@ const Emergency = () => {
                                 <span className="block font-bold text-gray-900 text-lg">Coast Guard</span>
                                 <span className="text-sm text-gray-500">Maritime emergencies</span>
                             </div>
-                            <a href="tel:1-800-424-8802" className="text-xl md:text-2xl font-black text-primary-600 bg-primary-100 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors">1-800</a>
+                            <a href="tel:1554" className="text-xl md:text-2xl font-black text-primary-600 bg-primary-100 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors">1554</a>
                         </li>
                         <li className="flex justify-between items-center">
                             <div>
                                 <span className="block font-bold text-gray-900 text-lg">Animal Rescue</span>
-                                <span className="text-sm text-gray-500">Pet & Wildlife</span>
+                                <span className="text-sm text-gray-500">Pet & Wildlife Rescue</span>
                             </div>
-                            <a href="tel:555-0199" className="text-2xl font-black text-primary-600 bg-primary-100 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors">555-0199</a>
+                            <a href="tel:1962" className="text-2xl font-black text-primary-600 bg-primary-100 px-4 py-2 rounded-lg hover:bg-primary-200 transition-colors">1962</a>
                         </li>
                     </ul>
                 </div>
